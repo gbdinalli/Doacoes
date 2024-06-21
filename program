@@ -1,0 +1,168 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+
+namespace GerenciamentoDoacoes
+{
+    class Program
+    {
+        // Lista para armazenar doações
+        static List<Doacao> listaDeDoacoes = new List<Doacao>();
+
+        static void Main(string[] args)
+        {
+            //Loop principal
+            while (true)
+            {
+                //Menu principal
+                Console.WriteLine("\n1. Adicionar Doação");
+                Console.WriteLine("2. Calcular Total de Doações");
+                Console.WriteLine("3. Salvar Informações de Doações");
+                Console.WriteLine("4. Sair\n");
+                Console.Write("Escolha uma opção: ");
+                string opcao = Console.ReadLine();
+
+                switch (opcao)
+                {
+                    case "1":
+                        AdicionarDoacao();
+                        break;
+                    case "2":
+                        CalcularTotalDoacoes();
+                        break;
+                    case "3":
+                        SalvarInformacoes();
+                        break;
+                    case "4":
+                        return;
+                    default:
+                        Console.WriteLine("Opção inválida. Tente novamente.");
+                        break;
+                }
+            }
+        }
+
+        //Adicionar doação
+        static void AdicionarDoacao()
+        {
+            //Seleciona o tipo de doação
+            Console.WriteLine("\nEscolha o Tipo de Doação:");
+            Console.WriteLine("1. Dinheiro");
+            Console.WriteLine("2. Alimentos");
+            Console.WriteLine("3. Roupas");
+            Console.WriteLine("4. Produtos de Higiene");
+            Console.WriteLine("5. Outros");
+            Console.Write("Opção: ");
+            string tipoOpcao = Console.ReadLine();
+
+            string tipo;
+            switch (tipoOpcao)
+            {
+                case "1":
+                    tipo = "Dinheiro";
+                    break;
+                case "2":
+                    tipo = "Alimentos";
+                    break;
+                case "3":
+                    tipo = "Roupas";
+                    break;
+                case "4":
+                    tipo = "Produtos de Higiene";
+                    break;
+                case "5":
+                    Console.Write("Especifique o tipo de doação: ");
+                    tipo = Console.ReadLine();
+                    break;
+                default:
+                    Console.WriteLine("Opção inválida. Tipo de doação definido como 'Outros'.");
+                    tipo = "Outros";
+                    break;
+            }
+
+            //Entrada da quantidade de doação
+            Console.Write("Quantidade: ");
+            decimal quantidade;
+            while (!decimal.TryParse(Console.ReadLine(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out quantidade))
+            {
+                Console.Write("Quantidade inválida. Digite novamente: \n");
+            }
+
+            //Entrada da data da doação
+            Console.Write("Data (dd/MM/yyyy): ");
+            DateTime data;
+            while (!DateTime.TryParseExact(Console.ReadLine(), "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out data))
+            {
+                Console.Write("Data inválida. Digite novamente (dd/MM/yyyy): ");
+            }
+
+            //Criação do objeto Doacao e adição à lista
+            Doacao doacao = new Doacao(tipo, quantidade, data);
+            listaDeDoacoes.Add(doacao);
+            Console.WriteLine("Doação adicionada com sucesso.\n");
+        }
+
+        // Método para calcular e exibir o total de doações por tipo
+        static void CalcularTotalDoacoes()
+        {
+            Dictionary<string, decimal> totaisPorTipo = new Dictionary<string, decimal>();
+
+            foreach (var doacao in listaDeDoacoes)
+            {
+                if (totaisPorTipo.ContainsKey(doacao.Tipo))
+                {
+                    totaisPorTipo[doacao.Tipo] += doacao.Quantidade;
+                }
+                else
+                {
+                    totaisPorTipo[doacao.Tipo] = doacao.Quantidade;
+                }
+            }
+
+            //Mostra o total de doação por tipo
+            Console.WriteLine("Total das Doações por Tipo:\n");
+            foreach (var tipo in totaisPorTipo.Keys)
+            {
+                Console.WriteLine($"{tipo}: {totaisPorTipo[tipo]:C}");
+            }
+        }
+
+        //Salva as informações em um arquivo
+        static void SalvarInformacoes()
+        {
+            Console.Write("Caminho do arquivo para salvar as informações: ");
+            string caminhoArquivo = Console.ReadLine();
+
+            using (StreamWriter sw = new StreamWriter(caminhoArquivo))
+            {
+                foreach (var doacao in listaDeDoacoes)
+                {
+                    sw.WriteLine(doacao.ToString());
+                }
+            }
+            Console.WriteLine("Informações salvas com sucesso.\n");
+        }
+    }
+
+    //Classe que representa uma doação
+    class Doacao
+    {
+        public string Tipo { get; set; }
+        public decimal Quantidade { get; set; }
+        public DateTime Data { get; set; }
+
+        //Construtor da classe Doacao
+        public Doacao(string tipo, decimal quantidade, DateTime data)
+        {
+            Tipo = tipo;
+            Quantidade = quantidade;
+            Data = data;
+        }
+
+        public override string ToString()
+        {
+            return $"{Data.ToShortDateString()} - {Tipo}: {Quantidade:C}";
+        }
+    }
+}
